@@ -1,0 +1,6 @@
+<resources>
+    <string-array name="detection_options">
+        <item>Live Detection</item>
+        <item>Gallery Detection</item>
+    </string-array>
+</resources>
