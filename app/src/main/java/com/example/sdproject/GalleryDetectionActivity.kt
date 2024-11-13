@@ -23,8 +23,10 @@ class GalleryDetectionActivity : AppCompatActivity() {
     private lateinit var selectImageButton: Button
     private lateinit var colorTextView: TextView
     private lateinit var imageView: ImageView
+    private lateinit var colorImageView: ImageView // Color preview view
     private lateinit var photoPickerLauncher: ActivityResultLauncher<Intent>
-    private var bitmap: Bitmap? = null
+    private var originalBitmap: Bitmap? = null // Store original bitmap separately
+    private var displayedBitmap: Bitmap? = null // Bitmap with markings to display
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,15 +34,17 @@ class GalleryDetectionActivity : AppCompatActivity() {
 
         colorTextView = findViewById(R.id.colorTextView)
         selectImageButton = findViewById(R.id.selectImageButton)
-        imageView = findViewById(R.id.imageView) // Assuming you have an ImageView in the layout
+        imageView = findViewById(R.id.imageView)
+        colorImageView = findViewById(R.id.colorImageView) // Initialize color preview ImageView
 
-        // Initialize the photo picker launcher for gallery image selection
+        // Initialize photo picker launcher
         photoPickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 result.data?.data?.let { uri ->
-                    bitmap = loadBitmapFromUri(uri)
-                    bitmap?.let {
-                        imageView.setImageBitmap(it)
+                    originalBitmap = loadBitmapFromUri(uri)
+                    originalBitmap?.let {
+                        displayedBitmap = it.copy(Bitmap.Config.ARGB_8888, true) // Copy for displaying
+                        imageView.setImageBitmap(displayedBitmap)
                     }
                 }
             }
@@ -50,58 +54,29 @@ class GalleryDetectionActivity : AppCompatActivity() {
         selectImageButton.setOnClickListener {
             selectImageFromGallery()
         }
-        // Function to get adjusted bitmap coordinates based on ImageView scaling
-        fun getBitmapCoordinates(touchX: Float, touchY: Float): Pair<Int, Int>? {
-            // Ensure the ImageView and Bitmap are properly initialized
-            if (imageView.drawable == null || bitmap == null) return null
 
-            // Calculate the scale factor and position offset for the image inside the ImageView
-            val scaleX = imageView.width.toFloat() / bitmap!!.width
-            val scaleY = imageView.height.toFloat() / bitmap!!.height
-            val scaleFactor = scaleX.coerceAtMost(scaleY)
-
-            // Calculate offset if ImageView dimensions differ from bitmap dimensions after scaling
-            val offsetX = (imageView.width - bitmap!!.width * scaleFactor) / 2
-            val offsetY = (imageView.height - bitmap!!.height * scaleFactor) / 2
-
-            // Convert the touch coordinates to the bitmap's coordinate system
-            val adjustedX = ((touchX - offsetX) / scaleFactor).toInt()
-            val adjustedY = ((touchY - offsetY) / scaleFactor).toInt()
-
-            // Ensure the adjusted coordinates are within the bitmap bounds
-            return if (adjustedX in 0 until bitmap!!.width && adjustedY in 0 until bitmap!!.height) {
-                Pair(adjustedX, adjustedY)
-            } else {
-                null
-            }
-        }
-
-        // Handle touch events on the image to detect the color
+        // Handle touch events on the image to detect color
         imageView.setOnTouchListener { _, event ->
-            if (bitmap != null && event.action == MotionEvent.ACTION_DOWN) {
-                // Get adjusted touch coordinates
+            if (originalBitmap != null && event.action == MotionEvent.ACTION_DOWN) {
                 val adjustedPoint = getBitmapCoordinates(event.x, event.y)
-
                 if (adjustedPoint != null) {
                     val (x, y) = adjustedPoint
 
-                    // Get the pixel color at the adjusted coordinates
-                    val color = bitmap!!.getPixel(x, y)
+                    // Get pixel color and display it
+                    val color = originalBitmap!!.getPixel(x, y)
                     val hexColor = String.format("#%06X", (0xFFFFFF and color))
                     val colorName = ColorDatabase.getClosestColor(hexColor)
 
-                    // Update the color text view
                     colorTextView.text = "Color: $colorName ($hexColor)"
+                    colorImageView.setBackgroundColor(color) // Update color preview
 
-                    // Mark the touch position on the image
-                    val markedBitmap = markTouchPosition(bitmap!!, x, y)
-                    imageView.setImageBitmap(markedBitmap)
+                    // Update marked image
+                    displayedBitmap = markTouchPosition(originalBitmap!!, x, y)
+                    imageView.setImageBitmap(displayedBitmap)
                 }
             }
             true
         }
-
-
     }
 
     private fun selectImageFromGallery() {
@@ -114,18 +89,36 @@ class GalleryDetectionActivity : AppCompatActivity() {
         return BitmapFactory.decodeStream(inputStream)
     }
 
-    private fun markTouchPosition(bitmap: Bitmap, x: Int, y: Int): Bitmap {
-        val markedBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true) // Copy the bitmap so we can modify it
-        val canvas = Canvas(markedBitmap)
+    // Adjust touch coordinates to bitmap coordinates
+    private fun getBitmapCoordinates(touchX: Float, touchY: Float): Pair<Int, Int>? {
+        if (imageView.drawable == null || originalBitmap == null) return null
 
-        // Draw a marker (red circle) at the touch location
+        val scaleX = imageView.width.toFloat() / originalBitmap!!.width
+        val scaleY = imageView.height.toFloat() / originalBitmap!!.height
+        val scaleFactor = scaleX.coerceAtMost(scaleY)
+
+        val offsetX = (imageView.width - originalBitmap!!.width * scaleFactor) / 2
+        val offsetY = (imageView.height - originalBitmap!!.height * scaleFactor) / 2
+
+        val adjustedX = ((touchX - offsetX) / scaleFactor).toInt()
+        val adjustedY = ((touchY - offsetY) / scaleFactor).toInt()
+
+        return if (adjustedX in 0 until originalBitmap!!.width && adjustedY in 0 until originalBitmap!!.height) {
+            Pair(adjustedX, adjustedY)
+        } else {
+            null
+        }
+    }
+
+    private fun markTouchPosition(bitmap: Bitmap, x: Int, y: Int): Bitmap {
+        val markedBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+        val canvas = Canvas(markedBitmap)
         val paint = Paint().apply {
             color = Color.RED
             style = Paint.Style.FILL
             strokeWidth = 10f
         }
-        canvas.drawCircle(x.toFloat(), y.toFloat(), 20f, paint) // Draw a circle with radius 20px
-
+        canvas.drawCircle(x.toFloat(), y.toFloat(), 20f, paint)
         return markedBitmap
     }
 }

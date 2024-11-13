@@ -1,15 +1,12 @@
 package com.example.sdproject
 
 import android.graphics.Color
-import kotlin.math.abs
-import kotlin.math.sqrt
 import kotlin.math.pow
+import kotlin.math.sqrt
 
 object ColorDatabase {
 
-    // A map of hex color codes to their names
-    val colorMap = mapOf(
-        // Basic Colors
+    private val colorMap = mapOf(
         "#FFFFFF" to "White",
         "#000000" to "Black",
         "#FF0000" to "Red",
@@ -22,97 +19,106 @@ object ColorDatabase {
         "#A52A2A" to "Brown",
         "#808080" to "Gray",
         "#FFD700" to "Gold",
-        "#32CD32" to "Lime",
-
-        // Light versions of colors
-        "#FFCCCC" to "Light Red",
-        "#CCFFCC" to "Light Green",
-        "#CCCCFF" to "Light Blue",
-        "#FFFFCC" to "Light Yellow",
-        "#FFDAB9" to "Light Orange",
-        "#E6A9EC" to "Light Purple",
-        "#FFB6C1" to "Light Pink",
-        "#D2B48C" to "Light Brown",
-        "#D3D3D3" to "Light Gray",
-        "#F0E68C" to "Light Gold",
-        "#90EE90" to "Light Lime",
-
-        // Dark versions of colors
-        "#8B0000" to "Dark Red",
-        "#006400" to "Dark Green",
-        "#00008B" to "Dark Blue",
-        "#B8860B" to "Dark Yellow",
-        "#FF8C00" to "Dark Orange",
-        "#4B0082" to "Dark Purple",
-        "#FF1493" to "Dark Pink",
-        "#8B4513" to "Dark Brown",
-        "#A9A9A9" to "Dark Gray",
-        "#FFD700" to "Dark Gold",
-        "#006400" to "Dark Lime",
+        "#32CD32" to "Lime"
+        // Add more colors as needed
     )
 
-    // Function to convert RGB to CIE L*a*b*
-    private fun rgbToLab(rgb: Int): Triple<Float, Float, Float> {
-        val r = (rgb shr 16) and 0xFF
-        val g = (rgb shr 8) and 0xFF
-        val bRgbComponent = rgb and 0xFF  // Renamed variable to avoid conflict
+    // Define RGB ranges for color categories
+    private val redRange = Triple(150..255, 0..100, 0..100)  // Red range (high red, low green, low blue)
+    private val greenRange = Triple(0..100, 150..255, 0..100) // Green range (low red, high green, low blue)
+    private val blueRange = Triple(0..100, 0..100, 150..255) // Blue range (low red, low green, high blue)
+    private val yellowRange = Triple(150..255, 150..255, 0..100) // Yellow range (high red, high green, low blue)
 
-        val rNorm = r / 255.0f
-        val gNorm = g / 255.0f
-        val bNorm = bRgbComponent / 255.0f  // Used renamed variable
+    // Improved Orange Range: adjusted to reduce overlap with red
+    private val orangeRange = Triple(200..255, 100..200, 0..100)  // Orange range (high red, moderate green, low blue)
 
-        // Apply the RGB to XYZ transformation (using the standard D65 illuminant)
-        val x = rNorm * 0.4124564f + gNorm * 0.3575761f + bNorm * 0.1804375f
-        val y = rNorm * 0.2126729f + gNorm * 0.7151522f + bNorm * 0.0721750f
-        val z = rNorm * 0.0193339f + gNorm * 0.1191920f + bNorm * 0.9503041f
+    private val purpleRange = Triple(100..150, 0..50, 100..150) // Purple range (moderate red, low green, moderate blue)
 
-        // Normalize XYZ
-        val xNorm = x / 0.95047f
-        val yNorm = y / 1.00000f
-        val zNorm = z / 1.08883f
+    // Define Light and Dark variants for existing colors
+    private val lightRedRange = Triple(255..255, 50..150, 50..150)
+    private val darkRedRange = Triple(100..150, 0..50, 0..50)
 
-        // Convert XYZ to CIE L*a*b*
-        val l = if (yNorm > 0.008856f) {
-            116.0f * (yNorm.toDouble().pow(1.0 / 3.0)).toFloat() - 16.0f
-        } else {
-            903.3f * yNorm
-        }
-        val a = 500.0f * ((xNorm.toDouble().pow(1.0 / 3.0)) - (yNorm.toDouble().pow(1.0 / 3.0))).toFloat()
-        val b = 200.0f * ((yNorm.toDouble().pow(1.0 / 3.0)) - (zNorm.toDouble().pow(1.0 / 3.0))).toFloat()
+    private val lightGreenRange = Triple(50..150, 255..255, 50..150)
+    private val darkGreenRange = Triple(0..50, 100..150, 0..50)
 
-        return Triple(l, a, b)
+    private val lightBlueRange = Triple(50..150, 50..150, 255..255)
+    private val darkBlueRange = Triple(0..50, 0..50, 100..150)
+
+    private val lightYellowRange = Triple(255..255, 255..255, 0..50)
+    private val darkYellowRange = Triple(150..200, 150..200, 0..50)
+
+    private val lightOrangeRange = Triple(255..255, 150..200, 0..50)
+    private val darkOrangeRange = Triple(150..200, 50..100, 0..50)
+
+    private val lightPurpleRange = Triple(150..200, 0..50, 150..200)
+    private val darkPurpleRange = Triple(50..100, 0..50, 50..100)
+
+    // Check if a color is within a defined RGB range
+    private fun isInRange(r: Int, g: Int, b: Int, range: Triple<IntRange, IntRange, IntRange>): Boolean {
+        return r in range.first && g in range.second && b in range.third
     }
 
-    // Function to calculate the Euclidean distance in CIE L*a*b* space
-    private fun colorDistanceLab(rgb1: Int, rgb2: Int): Float {
-        val (l1, a1, b1) = rgbToLab(rgb1)
-        val (l2, a2, b2) = rgbToLab(rgb2)
-
-        // Euclidean distance in CIE L*a*b* space
-        return sqrt((l1 - l2).toDouble().pow(2) + (a1 - a2).toDouble().pow(2) + (b1 - b2).toDouble().pow(2)).toFloat()
-    }
-
-    // Function to get the closest color name based on hex code
+    // Function to get the closest color based on RGB ranges
     fun getClosestColor(hexColor: String): String {
-        // Convert the hex color to an RGB value
         val rgbColor = Color.parseColor(hexColor)
+        val r = (rgbColor shr 16) and 0xFF
+        val g = (rgbColor shr 8) and 0xFF
+        val b = rgbColor and 0xFF
 
-        // Initialize the closest match variables
-        var closestColorName = "Unknown color"
-        var minDistance = Float.MAX_VALUE
+        // Check for specific color ranges
+        when {
+            isInRange(r, g, b, redRange) -> return "Red"
+            isInRange(r, g, b, greenRange) -> return "Green"
+            isInRange(r, g, b, blueRange) -> return "Blue"
+            isInRange(r, g, b, yellowRange) -> return "Yellow"
+            isInRange(r, g, b, orangeRange) -> return "Orange"
+            isInRange(r, g, b, purpleRange) -> return "Purple"
 
-        // Iterate through all colors in the map to find the closest match
+            // Light and Dark variants
+            isInRange(r, g, b, lightRedRange) -> return "Light Red"
+            isInRange(r, g, b, darkRedRange) -> return "Dark Red"
+
+            isInRange(r, g, b, lightGreenRange) -> return "Light Green"
+            isInRange(r, g, b, darkGreenRange) -> return "Dark Green"
+
+            isInRange(r, g, b, lightBlueRange) -> return "Light Blue"
+            isInRange(r, g, b, darkBlueRange) -> return "Dark Blue"
+
+            isInRange(r, g, b, lightYellowRange) -> return "Light Yellow"
+            isInRange(r, g, b, darkYellowRange) -> return "Dark Yellow"
+
+            isInRange(r, g, b, lightOrangeRange) -> return "Light Orange"
+            isInRange(r, g, b, darkOrangeRange) -> return "Dark Orange"
+
+            isInRange(r, g, b, lightPurpleRange) -> return "Light Purple"
+            isInRange(r, g, b, darkPurpleRange) -> return "Dark Purple"
+        }
+
+        // Default color mapping if no range match found
         for ((colorHex, colorName) in colorMap) {
             val colorRgb = Color.parseColor(colorHex)
-            val distance = colorDistanceLab(rgbColor, colorRgb)
-
-            // If the current color is closer, update the closest match
-            if (distance < minDistance) {
-                minDistance = distance
-                closestColorName = colorName
+            val distance = colorDistance(rgbColor, colorRgb)
+            if (distance < 100) { // Adjust the threshold based on precision you need
+                return colorName
             }
         }
 
-        return closestColorName
+        return "Unknown color"
+    }
+
+    // Calculate the Euclidean distance between two RGB colors
+    private fun colorDistance(rgb1: Int, rgb2: Int): Double {
+        val r1 = (rgb1 shr 16) and 0xFF
+        val g1 = (rgb1 shr 8) and 0xFF
+        val b1 = rgb1 and 0xFF
+
+        val r2 = (rgb2 shr 16) and 0xFF
+        val g2 = (rgb2 shr 8) and 0xFF
+        val b2 = rgb2 and 0xFF
+
+        return sqrt(
+            ((r1 - r2).toDouble().pow(2) + (g1 - g2).toDouble().pow(2) + (b1 - b2).toDouble().pow(2)).toFloat()
+                .toDouble()
+        )
     }
 }
