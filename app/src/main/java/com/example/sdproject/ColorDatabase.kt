@@ -2,6 +2,8 @@ package com.example.sdproject
 
 import android.graphics.Color
 import kotlin.math.abs
+import kotlin.math.sqrt
+import kotlin.math.pow
 
 object ColorDatabase {
 
@@ -47,40 +49,47 @@ object ColorDatabase {
         "#A9A9A9" to "Dark Gray",
         "#FFD700" to "Dark Gold",
         "#006400" to "Dark Lime",
-
-      /*  // Additional colors
-        "#00FFFF" to "Aqua",
-        "#FF00FF" to "Magenta",
-        "#800000" to "Maroon",
-        "#808000" to "Olive",
-        "#008080" to "Teal",
-        "#D3D3D3" to "Silver",
-        "#8A2BE2" to "Blue Violet",
-        "#4B0082" to "Indigo",
-        "#7FFF00" to "Chartreuse",
-        "#FF6347" to "Tomato",
-        "#FF4500" to "Orange Red",
-        "#2E8B57" to "Sea Green",
-        "#20B2AA" to "Light Sea Green",
-        "#A52A2A" to "Brown",
-        "#800080" to "Purple",
-        "#F5DEB3" to "Wheat",
-        "#D2691E" to "Chocolate",
-        "#FF8C00" to "Dark Orange"*/
     )
 
-    // Function to calculate the Euclidean distance between two RGB colors
-    fun colorDistance(rgb1: Int, rgb2: Int): Int {
-        val r1 = (rgb1 shr 16) and 0xFF
-        val g1 = (rgb1 shr 8) and 0xFF
-        val b1 = rgb1 and 0xFF
+    // Function to convert RGB to CIE L*a*b*
+    private fun rgbToLab(rgb: Int): Triple<Float, Float, Float> {
+        val r = (rgb shr 16) and 0xFF
+        val g = (rgb shr 8) and 0xFF
+        val bRgbComponent = rgb and 0xFF  // Renamed variable to avoid conflict
 
-        val r2 = (rgb2 shr 16) and 0xFF
-        val g2 = (rgb2 shr 8) and 0xFF
-        val b2 = rgb2 and 0xFF
+        val rNorm = r / 255.0f
+        val gNorm = g / 255.0f
+        val bNorm = bRgbComponent / 255.0f  // Used renamed variable
 
-        // Calculate the Euclidean distance between two RGB colors
-        return abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2)
+        // Apply the RGB to XYZ transformation (using the standard D65 illuminant)
+        val x = rNorm * 0.4124564f + gNorm * 0.3575761f + bNorm * 0.1804375f
+        val y = rNorm * 0.2126729f + gNorm * 0.7151522f + bNorm * 0.0721750f
+        val z = rNorm * 0.0193339f + gNorm * 0.1191920f + bNorm * 0.9503041f
+
+        // Normalize XYZ
+        val xNorm = x / 0.95047f
+        val yNorm = y / 1.00000f
+        val zNorm = z / 1.08883f
+
+        // Convert XYZ to CIE L*a*b*
+        val l = if (yNorm > 0.008856f) {
+            116.0f * (yNorm.toDouble().pow(1.0 / 3.0)).toFloat() - 16.0f
+        } else {
+            903.3f * yNorm
+        }
+        val a = 500.0f * ((xNorm.toDouble().pow(1.0 / 3.0)) - (yNorm.toDouble().pow(1.0 / 3.0))).toFloat()
+        val b = 200.0f * ((yNorm.toDouble().pow(1.0 / 3.0)) - (zNorm.toDouble().pow(1.0 / 3.0))).toFloat()
+
+        return Triple(l, a, b)
+    }
+
+    // Function to calculate the Euclidean distance in CIE L*a*b* space
+    private fun colorDistanceLab(rgb1: Int, rgb2: Int): Float {
+        val (l1, a1, b1) = rgbToLab(rgb1)
+        val (l2, a2, b2) = rgbToLab(rgb2)
+
+        // Euclidean distance in CIE L*a*b* space
+        return sqrt((l1 - l2).toDouble().pow(2) + (a1 - a2).toDouble().pow(2) + (b1 - b2).toDouble().pow(2)).toFloat()
     }
 
     // Function to get the closest color name based on hex code
@@ -90,12 +99,12 @@ object ColorDatabase {
 
         // Initialize the closest match variables
         var closestColorName = "Unknown color"
-        var minDistance = Int.MAX_VALUE
+        var minDistance = Float.MAX_VALUE
 
         // Iterate through all colors in the map to find the closest match
         for ((colorHex, colorName) in colorMap) {
             val colorRgb = Color.parseColor(colorHex)
-            val distance = colorDistance(rgbColor, colorRgb)
+            val distance = colorDistanceLab(rgbColor, colorRgb)
 
             // If the current color is closer, update the closest match
             if (distance < minDistance) {

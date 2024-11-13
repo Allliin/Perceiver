@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.MotionEvent
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -19,6 +20,7 @@ class LiveDetectionActivity : AppCompatActivity() {
 
     private lateinit var previewView: PreviewView
     private lateinit var colorTextView: TextView
+    private lateinit var colorImageView: ImageView
 
     companion object {
         const val PERMISSION_CODE = 1001
@@ -30,6 +32,7 @@ class LiveDetectionActivity : AppCompatActivity() {
 
         previewView = findViewById(R.id.previewView)
         colorTextView = findViewById(R.id.colorTextView)
+        colorImageView = findViewById(R.id.colorImageView)
 
         // Check for camera permissions
         if (allPermissionsGranted()) {
@@ -96,9 +99,11 @@ class LiveDetectionActivity : AppCompatActivity() {
                 val hexColor = String.format("#%06X", 0xFFFFFF and pixelColor)
                 val colorName = ColorDatabase.getClosestColor(hexColor)
 
-                // Update UI with color info
+                // Update TextView with color info
                 colorTextView.text = "Color: $colorName ($hexColor)"
-                previewView.setBackgroundColor(pixelColor)
+
+                // Update ImageView with the detected color
+                colorImageView.setBackgroundColor(pixelColor)  // Update ImageView with the color
             } else {
                 colorTextView.text = "Touch outside image bounds"
             }
