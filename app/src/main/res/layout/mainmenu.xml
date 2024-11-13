@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
@@ -21,67 +22,83 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="32dp" />
 
-    <LinearLayout
-        android:id="@+id/subOptionLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_below="@id/titleTextView"
-        android:layout_marginTop="32dp">
-
-        <Button
-            android:id="@+id/liveDetectionButton"
-            android:layout_width="0dp"
-            android:layout_height="120dp"
-            android:layout_weight="0.5"
-            android:text="Live Detection"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#FF9800"
-            android:layout_marginEnd="8dp"
-            android:alpha="0"
-            android:scaleX="1"
-            android:scaleY="1" />
-
-        <Button
-            android:id="@+id/galleryDetectionButton"
-            android:layout_width="0dp"
-            android:layout_height="120dp"
-            android:layout_weight="0.5"
-            android:text="Gallery Detection"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#FF9800"
-            android:layout_marginStart="8dp"
-            android:alpha="0"
-            android:scaleX="1"
-            android:scaleY="1" />
-    </LinearLayout>
-
-    <androidx.cardview.widget.CardView
-        android:id="@+id/colorDetectionCard"
+    <!-- FrameLayout to group CardView and buttons together -->
+    <FrameLayout
+        android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
-        android:layout_below="@id/subOptionLayout"
-        android:layout_marginTop="32dp"
-        android:layout_centerHorizontal="true">
+        android:layout_below="@id/titleTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="32dp">
 
-        <FrameLayout
+        <!-- CardView placed first to be at the back -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/colorDetectionCard"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/card_gradient">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="8dp">
 
-            <TextView
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="Color Detection"
-                android:textColor="#FFFFFF"
-                android:textSize="20sp"
-                android:fontFamily="sans-serif-medium" />
-        </FrameLayout>
+                android:background="@drawable/card_gradient">
 
-    </androidx.cardview.widget.CardView>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:text="Color Detection"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp" />
+            </FrameLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Buttons placed exactly over the CardView, perfectly aligned -->
+        <FrameLayout
+            android:id="@+id/subOptionLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <!-- Live Detection Button with margin -->
+                <Button
+                    android:id="@+id/liveDetectionButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.5"
+                    android:text="Live Detection"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#FF9800"
+                    android:scaleX="1"
+                    android:scaleY="1"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginStart="4dp" />  <!-- Add left margin to separate from the first button -->
+
+                <!-- Gallery Detection Button with margin -->
+                <Button
+                    android:id="@+id/galleryDetectionButton"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.5"
+                    android:text="Gallery Detection"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#FF9800"
+                    android:scaleX="1"
+                    android:scaleY="1"
+                    android:layout_marginStart="4dp"
+                 android:layout_marginEnd="4dp" />  <!-- Add right margin to separate from the first button -->
+
+            </LinearLayout>
+        </FrameLayout>
+    </FrameLayout>
 
 </RelativeLayout>
