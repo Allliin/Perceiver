@@ -8,7 +8,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import android.animation.ObjectAnimator
 import android.animation.AnimatorSet
+import android.graphics.Color
+import android.os.Build
 import androidx.core.animation.addListener
+import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,6 +45,9 @@ class MainActivity : AppCompatActivity() {
             animateCardAndRevealOptions()
         }
 
+        // Set the status bar and navigation bar color to red
+        setStatusAndNavigationBarColor()
+
         // Set up Intent Actions for buttons
         liveDetectionButton.setOnClickListener {
             startActivity(Intent(this, LiveDetectionActivity::class.java))
@@ -57,6 +63,24 @@ class MainActivity : AppCompatActivity() {
             if (subOptionLayout.visibility == View.VISIBLE) {
                 revertUI()
             }
+        }
+    }
+    private fun setStatusAndNavigationBarColor() {
+        val sysuitopColor = ContextCompat.getColor(this, R.color.bgd_end)
+        val sysuibottomColor = ContextCompat.getColor(this, R.color.bgd_str)
+        // Set the status bar color
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // For Android 11 and above
+            window.statusBarColor = sysuitopColor
+            window.navigationBarColor = sysuibottomColor
+        } else {
+            // For Android versions below 11
+            window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN
+            window.statusBarColor = sysuitopColor
+            window.navigationBarColor = sysuibottomColor
         }
     }
 
