@@ -1,112 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/LinearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center"
-    tools:context=".MainActivity"
-    android:background="@color/colorPrimaryDark">
+    android:background="@drawable/gradient_background"
+    tools:context=".MainActivity">
 
-    <!-- Title TextView -->
     <TextView
         android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Perceive"
-        android:textSize="26sp"
+        android:textSize="32sp"
         android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="24dp"
-        android:gravity="center" />
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#FFFFFF"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="32dp" />
 
-    <!-- Selected Option Display -->
-    <TextView
-        android:id="@+id/selectedOptionTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Live Detection"
-        android:textSize="20sp"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="24dp"
-        android:gravity="center" />
-
-    <!-- Circular Menu for Options -->
-    <RelativeLayout
-        android:id="@+id/circularMenuContainer"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_marginBottom="24dp"
-        android:layout_gravity="center">
-
-        <!-- Option Buttons in Circular Layout -->
-        <!-- Example: Option 1 -->
-        <ImageButton
-            android:id="@+id/liveDetectionButton"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Live Detection"
-            android:src="@drawable/ic_camera"
-            android:scaleType="centerInside" />
-
-        <!-- Example: Option 2 -->
-        <ImageButton
-            android:id="@+id/galleryDetectionButton"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:src="@drawable/ic_gallery"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="16dp"
-            android:contentDescription="Gallery Detection"
-            android:scaleType="centerInside" />
-
-        <!-- More options arranged around the center can go here -->
-    </RelativeLayout>
-
-    <!-- Preview area (optional) -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/previewCard"
+    <LinearLayout
+        android:id="@+id/subOptionLayout"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginBottom="24dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
-        app:cardBackgroundColor="#ffffff">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_below="@id/titleTextView"
+        android:layout_marginTop="32dp">
 
-        <ImageView
-            android:id="@+id/previewImage"
+        <Button
+            android:id="@+id/liveDetectionButton"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="0.5"
+            android:text="Live Detection"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF9800"
+            android:layout_marginEnd="8dp"
+            android:alpha="0"
+            android:scaleX="1"
+            android:scaleY="1" />
+
+        <Button
+            android:id="@+id/galleryDetectionButton"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="0.5"
+            android:text="Gallery Detection"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF9800"
+            android:layout_marginStart="8dp"
+            android:alpha="0"
+            android:scaleX="1"
+            android:scaleY="1" />
+    </LinearLayout>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/colorDetectionCard"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        android:layout_below="@id/subOptionLayout"
+        android:layout_marginTop="32dp"
+        android:layout_centerHorizontal="true">
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/icon2"
-            android:scaleType="centerInside"
-            android:contentDescription="Live or Gallery detection preview" />
+            android:background="@drawable/card_gradient">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="Color Detection"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:fontFamily="sans-serif-medium" />
+        </FrameLayout>
+
     </androidx.cardview.widget.CardView>
 
-    <!-- Start Detection Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/startDetectionButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:fontFamily="sans-serif-medium"
-        android:minHeight="48dp"
-        android:text="Start Detection"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:backgroundTint="@color/colorAccent"
-        app:cornerRadius="32dp"
-        app:icon="@drawable/play_ic"
-        app:iconGravity="textStart"
-        app:iconPadding="8dp"
-        app:iconSize="24dp"
-        app:iconTint="@android:color/white" />
-
-</LinearLayout>
+</RelativeLayout>

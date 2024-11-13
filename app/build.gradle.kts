@@ -41,6 +41,7 @@ android {
 
 dependencies {
     val cameraxVersion = "1.1.0-beta01" // Use the latest version
+    implementation ("androidx.cardview:cardview:1.0.0")
     implementation("com.google.android.material:material:1.8.0")
     implementation("androidx.camera:camera-camera2:$cameraxVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
