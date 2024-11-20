@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
+    android:fitsSystemWindows="true"
     tools:context=".LiveDetectionActivity">
 
     <!-- Camera Preview View (Full Screen) -->
@@ -16,7 +17,11 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"/>
 
     <!-- Overlay for Detected Color Information -->
     <LinearLayout
@@ -46,18 +51,27 @@
         tools:ignore="HardcodedText" />
 
     <!-- Circular ImageView for the detected color -->
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/colorImageView"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/colorTextView"
-            app:shapeAppearance="@style/CircularShape" />
-</LinearLayout>
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/colorImageView"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/colorTextView"
+        app:shapeAppearance="@style/CircularShape" />
 
+</LinearLayout>
+    <View
+        android:id="@+id/touchIndicator"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:background="@drawable/circle"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="MissingConstraints" />
     </androidx.constraintlayout.widget.ConstraintLayout>

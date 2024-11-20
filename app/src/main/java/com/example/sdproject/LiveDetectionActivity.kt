@@ -1,11 +1,16 @@
 package com.example.sdproject
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +27,9 @@ class LiveDetectionActivity : AppCompatActivity() {
     private lateinit var previewView: PreviewView
     private lateinit var colorTextView: TextView
     private lateinit var colorImageView: ImageView
+    private lateinit var touchIndicator: View // View for the white dot
+
+    private lateinit var gestureDetector: GestureDetector
 
     companion object {
         const val PERMISSION_CODE = 1001
@@ -31,14 +39,16 @@ class LiveDetectionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_live_detection)
 
+        // Initialize views
         previewView = findViewById(R.id.previewView)
         colorTextView = findViewById(R.id.colorTextView)
         colorImageView = findViewById(R.id.colorImageView)
+        touchIndicator = findViewById(R.id.touchIndicator) // Initialize touch indicator
 
         // Make the activity full screen
         enableFullScreen()
 
-        // Check for camera permissions
+        // Check camera permissions
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -47,12 +57,15 @@ class LiveDetectionActivity : AppCompatActivity() {
             )
         }
 
-        // Set touch listener on PreviewView to detect color at touch point
+        // Initialize GestureDetector
+        gestureDetector = GestureDetector(this, SwipeGestureListener())
+
+        // Set touch listener for the PreviewView
         previewView.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event) // Pass the event to GestureDetector
             if (event.action == MotionEvent.ACTION_DOWN) {
-                val touchX = event.x
-                val touchY = event.y
-                detectColorAt(touchX, touchY)
+                showTouchIndicator(event.x, event.y) // Show white dot on touch
+                detectColorAt(event.x, event.y) // Detect color on single touch
             }
             true
         }
@@ -77,7 +90,7 @@ class LiveDetectionActivity : AppCompatActivity() {
             }
 
             val imageAnalysis = ImageAnalysis.Builder().build().also {
-                // No specific analysis function needed; we are capturing bitmap directly from PreviewView
+                // No specific analysis needed; we capture bitmap directly from PreviewView
                 it.setAnalyzer(ContextCompat.getMainExecutor(this)) { imageProxy ->
                     imageProxy.close()
                 }
@@ -116,7 +129,7 @@ class LiveDetectionActivity : AppCompatActivity() {
                 colorTextView.text = "Color: $colorName ($hexColor)"
 
                 // Update ImageView with the detected color
-                colorImageView.setBackgroundColor(pixelColor)  // Update ImageView with the color
+                colorImageView.setBackgroundColor(pixelColor) // Update ImageView with the color
             } else {
                 colorTextView.text = "Touch outside image bounds"
             }
@@ -126,7 +139,68 @@ class LiveDetectionActivity : AppCompatActivity() {
         }
     }
 
+    private fun showTouchIndicator(x: Float, y: Float) {
+        // Ensure the indicator is visible
+        touchIndicator.visibility = View.VISIBLE
+
+        // Get the layout params for ConstraintLayout
+        val params = touchIndicator.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+
+        // Update the position dynamically
+        params.leftMargin = (x - touchIndicator.width / 2).toInt()
+        params.topMargin = (y - touchIndicator.height / 2).toInt()
+
+        // Apply the updated layout params
+        touchIndicator.layoutParams = params
+
+        // Animate fade-out after 2 seconds
+        touchIndicator.animate()
+            .alpha(0f)
+            .setDuration(2000)
+            .withEndAction {
+                touchIndicator.visibility = View.GONE
+                touchIndicator.alpha = 1f
+            }
+    }
+
+
     private fun allPermissionsGranted() = arrayOf(Manifest.permission.CAMERA).all {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun navigateToMainMenu() {
+        val intent = Intent(this, MainActivity::class.java) // Replace with your main menu activity class
+        startActivity(intent)
+        finish() // Optionally finish this activity to prevent returning to it
+    }
+
+    // Inner class for detecting swipe gestures
+    inner class SwipeGestureListener : GestureDetector.SimpleOnGestureListener() {
+        private val SWIPE_THRESHOLD = 100
+        private val SWIPE_VELOCITY_THRESHOLD = 100
+
+        override fun onFling(
+            e1: MotionEvent?,
+            e2: MotionEvent,
+            velocityX: Float,
+            velocityY: Float
+        ): Boolean {
+            if (e1 == null || e2 == null) return false
+
+            val diffX = e2.x - e1.x
+            val diffY = e2.y - e1.y
+
+            if (Math.abs(diffX) > Math.abs(diffY) &&
+                Math.abs(diffX) > SWIPE_THRESHOLD &&
+                Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD
+            ) {
+                if (diffX > 0) {
+                    // Detected a right swipe
+                    navigateToMainMenu()
+                }
+                return true
+            }
+            return false
+        }
     }
 }
