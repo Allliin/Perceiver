@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.MotionEvent
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +35,9 @@ class LiveDetectionActivity : AppCompatActivity() {
         colorTextView = findViewById(R.id.colorTextView)
         colorImageView = findViewById(R.id.colorImageView)
 
+        // Make the activity full screen
+        enableFullScreen()
+
         // Check for camera permissions
         if (allPermissionsGranted()) {
             startCamera()
@@ -52,6 +56,15 @@ class LiveDetectionActivity : AppCompatActivity() {
             }
             true
         }
+    }
+
+    private fun enableFullScreen() {
+        // Set the activity to full-screen mode
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                )
     }
 
     private fun startCamera() {

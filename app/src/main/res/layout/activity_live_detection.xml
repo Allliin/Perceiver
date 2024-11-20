@@ -1,73 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="16dp"
-    android:background="@drawable/gradient_background"
+    android:background="@android:color/black"
     tools:context=".LiveDetectionActivity">
 
-    <!-- Title TextView -->
-    <TextView
-        android:id="@+id/titleTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Live Color Detection"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:fontFamily="sans-serif-medium"
-        android:textColor="#FFFFFF"
-        android:layout_marginTop="32dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:gravity="center" />
-
-    <!-- Camera Preview View (Larger size) -->
+    <!-- Camera Preview View (Full Screen) -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/titleTextView"
-        app:layout_constraintBottom_toTopOf="@id/overlayFrame"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.8" /> <!-- Camera takes 80% of the screen height -->
-
-    <!-- Transparent FrameLayout for overlays (markers, shapes, etc.) -->
-    <FrameLayout
-        android:id="@+id/overlayFrame"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/previewView"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:background="@android:color/transparent">
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- TextView for displaying detected color -->
-        <TextView
-            android:id="@+id/colorTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Detected Color: #FFFFFF"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:gravity="center_vertical"
-            android:layout_marginEnd="8dp"
-            android:background="#AA000000"
-            android:layout_gravity="start|center_vertical"
-            android:layout_marginLeft="16dp" />
+    <!-- Overlay for Detected Color Information -->
+    <LinearLayout
+        android:id="@+id/detectedColorOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="#AA000000"
+        android:gravity="center_vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- ImageView to display the selected color next to the TextView -->
-        <ImageView
+    <!-- TextView for displaying detected color -->
+    <TextView
+        android:id="@+id/colorTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Detected Color: #FFFFFF"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:fontFamily="sans-serif-medium"
+        android:ellipsize="end"
+        android:singleLine="true"
+        tools:ignore="HardcodedText" />
+
+    <!-- Circular ImageView for the detected color -->
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/colorImageView"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_gravity="end|center_vertical"
-            android:contentDescription="Detected Color Image"
-            android:layout_marginEnd="16dp" />
-    </FrameLayout>
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/colorTextView"
+            app:shapeAppearance="@style/CircularShape" />
+</LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>

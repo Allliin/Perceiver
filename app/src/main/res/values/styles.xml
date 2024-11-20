@@ -10,4 +10,9 @@
         <item name="android:textColor">#FFFFFF</item> <!-- White text -->
         <item name="android:textColorHint">#AAAAAA</item> <!-- Light gray hint text -->
     </style>
+    <style name="CircularShape" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
 </resources>
